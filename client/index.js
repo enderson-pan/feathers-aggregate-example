@@ -12,6 +12,7 @@ const currentUser = '13809266602';
 
 (async ( )=> {
   try {
+    // Client aggregate query.
     const groupRes = await client.service('users').find({
       query:{
         phone: currentUser
@@ -19,7 +20,6 @@ const currentUser = '13809266602';
     });
     const { group } = groupRes.data[0];
     console.log('group: ', group);
-
     const res = await client.service('tower').find({
       query: {
         _aggregate:[
@@ -39,16 +39,26 @@ const currentUser = '13809266602';
         ]
       }
     });
-
     console.log('res: ', JSON.stringify(res, null, '  '));
 
-    /*const analyticService = client.service('analytic');
+    // server aggregate query.
+    const analyticService = client.service('analytic');
     const analyticRes = await analyticService.find({
       query:{
-        user: currentUser
+        aggregate: currentUser
       }
     });
-    console.log('analyticRes', analyticRes);*/
+    //console.log('analyticRes', analyticRes);
+    console.log('analyticRes: ', JSON.stringify(analyticRes, null, '  '));
+
+    // server populate query.
+    const populateRes = await analyticService.find({
+      query: {
+        populate: currentUser
+      }
+    });
+    console.log('populateRes: ', JSON.stringify(populateRes, null, '  '));
+
   } catch (e) {
     console.log('error: ', e);
   }

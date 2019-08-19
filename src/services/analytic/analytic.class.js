@@ -6,16 +6,39 @@ class Service {
   }
 
   async find (params) {
-    const res = await this.app.service('users').Model
-      .aggregate()
-      .lookup({
-        from: 'towers',
-        localField: 'group',
-        foreignField: 'group',
-        as: 'tower_group'
+    if (params.query && params.query.aggregate) {
+      const res = await this.app.service('users').Model
+        .aggregate()
+        .match({
+          phone: params.query.aggregate
+        })
+        .lookup({
+            from: 'towers',
+            localField: 'group',
+            foreignField: 'group',
+            as: 'groups_towers'
+          }
+        );
+      return res;
+    }
+
+    if (params.query && params.query.populate) {
+      const userGroup = await this.app.service('users').find({
+        query: {
+          phone: params.query.populate
         }
-      );
-    return res;
+      });
+
+      const { group } = userGroup.data[0];
+      const populateRes = await this.app.service('tower').Model
+        .find({
+          group
+        })
+        .populate({
+          path: 'maintainersInfo bindToDeviceInfo'
+        });
+      return populateRes;
+    }
   }
 
   async get (id, params) {

@@ -8,9 +8,27 @@ module.exports = function (app) {
   const tower = new Schema({
     name: { type: String, required: true, unique: true },
     group: { type: String, required: true },
-    bindToDevice: { type: String, required: true } // Device IMEI
+    maintainers: [{ type: String }],
+    bindToDevice: { type: String, required: true}
   }, {
-    timestamps: true
+    timestamps: true,
+    toJSON: {
+      virtuals: true
+    },
+    toObject: {
+      virutals: true
+    }
+  });
+  // ref only support objectId, so use virtual instead.
+  tower.virtual('maintainersInfo', {
+    ref: 'users',
+    localField: 'maintainers',
+    foreignField: 'phone'
+  });
+  tower.virtual('bindToDeviceInfo', {
+    ref: 'pose',
+    localField: 'bindToDevice',
+    foreignField: 'deviceIMEI'
   });
 
   return mongooseClient.model('tower', tower);
